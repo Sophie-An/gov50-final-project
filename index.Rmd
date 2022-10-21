@@ -3,7 +3,6 @@ title: "Gov 50 Final Project"
 author: "Sophie-An Kingsbury Lee"
 description: "Final project!"
 output:
-  distill::distill_article:
     self_contained: false
 ---
 
