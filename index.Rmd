@@ -3,7 +3,8 @@ title: "Gov 50 Final Project"
 author: "Sophie-An Kingsbury Lee"
 description: "Final project!"
 output:
-    self_contained: false
+self_contained: false
+    
 ---
 
 
@@ -13,7 +14,7 @@ output:
 I'd love to use data about the effects of environmental policy on behavior by comparing some metric before and after a change in policy. There isn't a specific policy I'm thinking about yet. I also may use EPA data. Alternatively, I'd like to compare the effects of different incentives (immediate cash, future benefit, laws/mandates) in the environmental realm.
 
 ## Milestone 2
-What factors have the largest influence on K-12 student math scores? I expect to find qualifying for free school lunch to be the largest determinant of low test scores, especially in 2022 after years of virtual pandemic school. Between grade years, I predict parents college education to be a large predictor, as students with college in mind will have more incentives and resources to perform well. I have pulled the mathematics standardized test scores for students in grade 4, 8, and 12 from the National Assessment of Educational Procurement (NAEP)'s Nation's Report Card. For each grade level, I have the test scores broken down by race, gender, whether or not their parents were college educated, and if they qualified for free school lunch (explanatory variables). I pulled these data for 2017, 2019, and 2022. I am looking to find which factor has the largest influence on test scores (outcome variable) and whether or not that factor changes over the years. I did a sample run using vaccination rate data and found pretty much no correlation between Grade 4 scores and the percent of the jurisdiction fully vaccinated. Moving forward, the explanatory variables will be binary with multiple categories for race (black? white? Hispanic? etc) and only one category for the others. I can't wait to see what comes out of this!
+What factors have the largest influence on K-12 student math scores? I expect to find qualifying for free school lunch to be the largest determinant of low test scores, especially in 2022 after years of virtual pandemic school. Between grade years, I predict parents college education to be a large predictor, as students with college in mind will have more incentives and resources to perform well. I have pulled the mathematics standardized test scores for students in grade 4, 8, and 12 from the National Assessment of Educational Procurement (NAEP)'s Nation's Report Card. For each grade level, I have the test scores broken down by race, gender, whether or not their parents were college educated, and if they qualified for free school lunch (explanatory variables). I pulled these data for 2017, 2019, and 2022. I am looking to find which factor has the largest influence on test scores (outcome variable) and whether or not that factor changes over the years. I did a sample run using vaccination rate data and found pretty much no correlation between Grade 4 scores and the percent of the jurisdiction fully vaccinated. Moving forward, the explanatory variables will be binary with multiple categories for race (black? white? Hispanic? etc) and only one category for the others. A strong correlation between either free school lunch or parents college education status and test scores would support my hypothesis. No correlation between the variables would disprove my hypothesis. I can't wait to see what comes out of this!
 
 
 ```{r}
