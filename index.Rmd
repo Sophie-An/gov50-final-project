@@ -13,26 +13,161 @@ self_contained: false
 
 I'd love to use data about the effects of environmental policy on behavior by comparing some metric before and after a change in policy. There isn't a specific policy I'm thinking about yet. I also may use EPA data. Alternatively, I'd like to compare the effects of different incentives (immediate cash, future benefit, laws/mandates) in the environmental realm.
 
-## Milestone 2
-What factors have the largest influence on K-12 student math scores? I expect to find qualifying for free school lunch to be the largest determinant of low test scores, especially in 2022 after years of virtual pandemic school. Between grade years, I predict parents college education to be a large predictor, as students with college in mind will have more incentives and resources to perform well. I have pulled the mathematics standardized test scores for students in grade 4, 8, and 12 from the National Assessment of Educational Procurement (NAEP)'s Nation's Report Card. For each grade level, I have the test scores broken down by race, gender, whether or not their parents were college educated, and if they qualified for free school lunch (explanatory variables). I pulled these data for 2017, 2019, and 2022. I am looking to find which factor has the largest influence on test scores (outcome variable) and whether or not that factor changes over the years. I did a sample run using vaccination rate data and found pretty much no correlation between Grade 4 scores and the percent of the jurisdiction fully vaccinated. Moving forward, the explanatory variables will be binary with multiple categories for race (black? white? Hispanic? etc) and only one category for the others. A strong correlation between either free school lunch or parents college education status and test scores would support my hypothesis. No correlation between the variables would disprove my hypothesis. I can't wait to see what comes out of this!
+I've changed what I'm doing from using NAEP score reports to looking at the question: "How does being affected by severe weather affect views of government and personal behaviors?"
 
 
 ```{r}
 library(tidyverse)
-vaccination <- read_csv("NAEP Data - Vaccination.csv")
-math_scores4 <- read_csv("NAEP Data - Mathematics, Grade 4, 2017, 2019, 2022.csv")
-
-math_vaccination <- vaccination |> 
-  left_join(math_scores4) |>
-  filter(Year == "2022") |>
-  select(`Jurisdiction`, `Fully Vaccinated`, `Average Scale Score`)
-
-math_vaccination_plot <- math_vaccination |>
-  ggplot(mapping = aes(x = `Fully Vaccinated`,
-                       y = `Average Scale Score`)) +
-  geom_point()
-
-math_vaccination_plot
+library(infer)
 ```
 
+
+```{r}
+library(haven)
+load_savfile <- read_spss("data/ATPW55.sav")
+saveascsv <- write.csv(load_savfile, file = "data/atp.csv", row.names = FALSE)
+atp <- read_csv("data/atp.csv")
+```
+
+```{r}
+## People who think human activity affects climate change "Not too much"
+not_human_activity <- atp |>
+  filter(ENVIR8_a_W55 == 3) |>
+  mutate(less_meat = if_else(EN6F1_a_W55 == 1, 1, 0),
+         carpool = if_else(EN6F1_b_W55 == 1, 1, 0))
+
+## Carpool and meat consumption rates
+not_human_activity |>
+  summarize(less_meat_prop = mean(less_meat, na.rm = TRUE) ,
+            carpool_prop = mean(carpool, na.rm = TRUE))
+
+## People who think human activity affects climate change a lot
+human_activity <- atp |>
+  filter(ENVIR8_a_W55 < 3) |>
+  mutate(less_meat = if_else(EN6F1_a_W55 == 1, 1, 0),
+         carpool = if_else(EN6F1_b_W55 == 1, 1, 0))
+
+# Carpool and meat consumption rates
+human_activity |>
+  summarize(less_meat_prop = mean(less_meat, na.rm = TRUE) ,
+            carpool_prop = mean(carpool, na.rm = TRUE))
+
+
+```
+Of the people who think human activity contributes to climate change "Not too much" or "Not at all," one quarter eat less meat and 40% carpool to help protect the environment. Of the people who think human activity contributes to climate change "A great deal" or "Some", half eat less meat and carpool to help protect the environment.
+
+
+how are the weather changes/disasters impacting a person correlated with support of government response to environmental issues and personal choices? (show how people affected by natural disaster more supportive of gov't)
+
+```{r}
+# people who think climate change is affecting their local community "A great deal" or "Some"
+affected <- atp |>
+  filter(CLIM9F1_a_W55 < 3 | (CLIM9F1_b_W55 < 3))
+
+# people who think climate change is affecting their local community "Not much" or "Not at all"
+unaffected <- atp |>
+  filter(CLIM9F1_a_W55 > 2 | (CLIM9F1_b_W55 > 2))
+
+affected
+unaffected
+```
+
+
+```{r}
+drought <- affected |>
+  count(CLIM10_a_W55) |>
+  pull(n)
+
+prop_drought_aff <- drought[1]/(drought[1] + drought[2])
+
+heat <- affected |>
+  count(CLIM10_b_W55) |>
+  pull(n)
+
+prop_heat_aff <- heat[1]/(heat[1] + heat[2])
+
+sweather <- affected |>
+  count(CLIM10_c_W55) |>
+  pull(n)
+
+prop_sweather_aff <- sweather[1]/(sweather[1] + sweather[2])
+
+sea <- affected |>
+  count(CLIM10_d_W55) |>
+  pull(n)
+
+prop_sea_aff <- sea[1]/(sea[1] + sea[2])
+
+wildfire <- affected |>
+  count(CLIM10_g_W55) |>
+  pull(n)
+
+prop_wildfire_aff <- wildfire[1]/(wildfire[1] + wildfire[2])
+```
+
+```{r}
+drought <- unaffected |>
+  count(CLIM10_a_W55) |>
+  pull(n)
+
+prop_drought_unaff <- drought[1]/(drought[1] + drought[2])
+
+heat <- unaffected |>
+  count(CLIM10_b_W55) |>
+  pull(n)
+
+prop_heat_unaff <- heat[1]/(heat[1] + heat[2])
+
+sweather <- unaffected |>
+  count(CLIM10_c_W55) |>
+  pull(n)
+
+prop_sweather_unaff <- sweather[1]/(sweather[1] + sweather[2])
+
+sea <- unaffected |>
+  count(CLIM10_d_W55) |>
+  pull(n)
+
+prop_sea_unaff <- sea[1]/(sea[1] + sea[2])
+
+wildfire <- unaffected |>
+  count(CLIM10_g_W55) |>
+  pull(n)
+
+prop_wildfire_unaff <- wildfire[1]/(wildfire[1] + wildfire[2])
+
+
+```
+
+```{r affected_barplot}
+
+event_prop_aff <- data.frame(event = c("Drought", "Excessive Heat", "Flood/Storm", "Sea Levels Rising", "Wildfires"),
+                         prop = c(prop_drought_aff, prop_heat_aff, prop_sweather_aff, prop_sea_aff, prop_wildfire_aff))
+
+event_prop_aff_bar <- ggplot(event_prop_aff, aes(x = factor(event),
+                       y = prop)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Weather Event",
+       y = "Proportion",
+       title = "Proportion of People Affected by Severe Weather Events",
+       subtitle = "Who Claim They're Affected by Global Warming")
+
+event_prop_aff_bar
+```
+
+```{r unaffected_barplot}
+
+event_prop_unaff <- data.frame(event = c("Drought", "Excessive Heat", "Flood/Storm", "Sea Levels Rising", "Wildfires"),
+                         prop = c(prop_drought_unaff, prop_heat_unaff, prop_sweather_unaff, prop_sea_unaff, prop_wildfire_unaff))
+
+event_prop_unaff_bar <- ggplot(event_prop_unaff, aes(x = factor(event),
+                       y = prop)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Weather Event",
+       y = "Proportion",
+       title = "Proportion of People Affected by Severe Weather Events", 
+       subtitle = "Who Claim They're Not Affected by Global Warming")
+
+event_prop_unaff_bar
+```
 
