@@ -233,8 +233,4 @@ differences_behavior <- data.frame(
 differences_behavior
 ```
 
-```{r}
-differences_behavior |>
-  chisq_test(response = affect_level, p = unaffected)
-```
 
