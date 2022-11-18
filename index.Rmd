@@ -60,6 +60,13 @@ Of the people who think human activity contributes to climate change "Not too mu
 how are the weather changes/disasters impacting a person correlated with support of government response to environmental issues and personal choices? (show how people affected by natural disaster more supportive of gov't)
 
 ```{r}
+atp <- atp |>
+  mutate(behavior_freq = case_when(
+    ENV17_W55 == 1 ~ "All the time",
+    ENV17_W55 == 2 ~ "Some of the time",
+    ENV17_W55 == 3 ~ "Not often",
+    ENV17_W55 == 4 ~ "Not at all"))
+
 # people who think climate change is affecting their local community "A great deal" or "Some"
 affected <- atp |>
   filter(CLIM9F1_a_W55 < 3 | (CLIM9F1_b_W55 < 3))
@@ -169,5 +176,65 @@ event_prop_unaff_bar <- ggplot(event_prop_unaff, aes(x = factor(event),
        subtitle = "Who Claim They're Not Affected by Global Warming")
 
 event_prop_unaff_bar
+```
+
+DIFFERENCES IN PERSONAL BEHAVIOR
+```{r}
+#Affected
+behavior_aff <- affected |> 
+  count(behavior_freq) |>
+  filter(behavior_freq != 99)
+
+
+behavior_aff |>
+  ggplot(aes(x = factor(behavior_freq), y = n)) +
+  geom_bar(stat = "identity") +
+  labs(x = "How often do you make an effort to live in ways that help protect the
+ environment?",
+   y = "Count")
+
+affected_proportions <- affected |>
+  count(behavior_freq) |>
+  filter(behavior_freq != "NA") |>
+  mutate(aff_prop = n/sum(n)) |>
+  select(behavior_freq, aff_prop)
+
+knitr::kable(behavior_aff, col.names = c("Frequency of Environmentally-Beneficial Behavior", "Count of People Affected by Severe Weather"))
+```
+```{r}
+#Unaffected
+behavior_unaff <- unaffected |> 
+  count(behavior_freq) |>
+  filter(behavior_freq != 99)
+
+behavior_unaff
+behavior_unaff |>
+  ggplot(aes(x = factor(behavior_freq), y = n)) +
+  geom_bar(stat = "identity") +
+  labs(x = "How often do you make an effort to live in ways that help protect the
+ environment?",
+   y = "Count")
+
+unaffected_proportions <- unaffected |>
+  count(behavior_freq) |>
+  filter(behavior_freq != "NA") |>
+  mutate(unaff_prop = n/sum(n)) |>
+  select(behavior_freq, unaff_prop)
+
+knitr::kable(behavior_unaff, col.names = c("Frequency of Environmentally-Beneficial Behavior", "Count of People Not Affected by Severe Weather"))
+```
+
+```{r}
+differences_behavior <- data.frame(
+  affect_level = c(unaffected_proportions$behavior_freq),
+  unaffected = c(unaffected_proportions$unaff_prop),
+  affected = c(affected_proportions$aff_prop))
+
+differences_behavior
+```
+
+```{r}
+differences_behavior |>
+  chisq_test(response = affect_level, p = unaffected)
 ```
 
