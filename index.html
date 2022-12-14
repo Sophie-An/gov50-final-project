@@ -481,7 +481,6 @@ approximately 0.0146 points. The p-value for this result was about
 significant and we fail to reject the null hypothesis (that there is no
 relationship between youth poverty rates and differences in test
 scores). We cannot prove causation.</p>
-<pre class="r"><code>knitr::kable(summary(lm(formula = Eligible ~ percent_democrat, data = dem_lunch))$coefficients, digits = 4, caption = &quot;Democrat Vote Share and Test Scores for Students Eligible for Free Lunch&quot;)</code></pre>
 <table>
 <caption>Democrat Vote Share and Test Scores for Students Eligible for
 Free Lunch</caption>
@@ -511,7 +510,6 @@ Free Lunch</caption>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>knitr::kable(summary(lm(formula = `Not eligible` ~ percent_democrat, data = dem_lunch))$coefficients, digits = 4, caption = &quot;Democrat Vote Share and Test Scores for Students Not Eligible for Free Lunch&quot;)</code></pre>
 <table>
 <caption>Democrat Vote Share and Test Scores for Students Not Eligible
 for Free Lunch</caption>
