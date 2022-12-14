@@ -7,230 +7,90 @@ self_contained: false
     
 ---
 
-
-
-## Project thoughts
-
-I'd love to use data about the effects of environmental policy on behavior by comparing some metric before and after a change in policy. There isn't a specific policy I'm thinking about yet. I also may use EPA data. Alternatively, I'd like to compare the effects of different incentives (immediate cash, future benefit, laws/mandates) in the environmental realm.
-
-I've changed what I'm doing from using NAEP score reports to looking at the question: "How does being affected by severe weather affect views of government and personal behaviors?"
-
-
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(infer)
+library(broom)
 ```
 
+```{r, include=FALSE}
+lunch <- read_csv("lunch.csv")
+democrat <- read_csv("democrat2020.csv")
+poverty <- read_csv("poverty.csv")
+```
+
+```{r, include=FALSE}
+lunch <- lunch |>
+  pivot_wider(names_from = eligibility,
+              values_from = score) |>
+  mutate(abs_score_diff = `Not eligible` - `Eligible`,
+         rel_score_diff = 100*(`Not eligible` - `Eligible`)/`Not eligible`)
+
+dem_lunch <- lunch |> 
+  left_join(democrat, by = "state") |>
+  left_join(poverty, by = "state") |>
+  mutate(poverty = 100*percent_poverty) |>
+  select(state, Eligible, `Not eligible`, abs_score_diff, poverty, rel_score_diff, percent_democrat)
+```
+
+## Introduction
+School is universal, but the quality of schools in the United States vary greatly. Education is considered one of the most important means of building and sustaining a more resilient, efficient society. K-12 schools are at the forefront of this. But, there are huge disparities by race, gender, income, and so on. This study focuses on differences in education outcomes by income, measured by free lunch eligibility. While eligibility requirements for free lunch differ by state, as a whole, the thresholds are adjusted for the different cost of living in each state and thus provide a strong metric of income level. The National’s Score Report assesses fourth, eighth, and twelfth grade math and English proficiency. For this study, the core focus is fourth grade math scores, because math is generally the same from state to state. I am trying to determine what factors influence disparities in test scores by income level, as measured by free lunch eligibility. How do political beliefs affect education disparities between students who do and don’t qualify for free lunch? I hypothesize that states with higher democrat vote percentages experience less inequality between students who don’t qualify for free lunch and students who do, because democratic states have more progressive welfare and education access support. Further, how do youth poverty rates affect differences in test scores? I predict that states with higher youth poverty rates will have higher differences in test scores between students eligible and not eligible for free lunch, because the wealth inequality may translate into education inequality.
+
+
+## Data
+The analyses of this cross-sectional study rely on three data sets. The primary one is The Nation’s Report Card published by the National Assessment of Educational Progress. In particular, the 2022 4th grade mathematics assessment by state and eligibility for free lunch. Each child’s score ranges from 0 to 500 with a national average of 231 points. Qualifying for free lunch in a sense measures the difference in scores by income level. The second data set, percentage of 2020 election votes in support of the Democratic Party by state, comes from the Massachusetts Institute of Technology Election Data and Science Lab. The percentages are of all voters, not all people eligible to vote. Poverty rates, the final data set, are pulled from the 2020 U.S. Census data. The poverty percentages are of people aged 5-17, the primary age demographic in schools by state.
+To calculate the difference in math scores between students who didn’t and did qualify for free lunch, I originally subtracted the average score of students who qualify for free lunch from the average of those who do not to find absolute difference in scores. But, the relative difference in scores better accounts for state to state differences that make the difference in scores seem larger. This is calculated by dividing the absolute score difference by the average score of students not eligible for free lunch.The relative difference in scores accounts for how a 10 point difference in a state with an average score of 271 and a 8 point difference in a state with an average score of 217 are equivalent in the percent difference.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Relative difference in scores distribution 
+lunch |>
+  ggplot(aes(x = rel_score_diff)) +
+  geom_histogram() +
+  labs(title = "Relative Differences in Scores by Free Lunch Eligibility",
+       x = "Difference in Scores as a Percentage",
+       y = "Count")
+```
+
+## Results
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Democrat percentage and score difference
+dem_lunch |>
+  ggplot(aes(x = percent_democrat, 
+             y = rel_score_diff)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "State Democrat Vote and Difference in 4th Grade Math Test Scores",
+            x = "2022 Democrat Vote Share",
+            y = "Difference in Scores by Free Lunch Eligibility")
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Poverty and score difference
+dem_lunch |>
+  ggplot(aes(x = poverty, 
+             y = rel_score_diff)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "State Poverty and Difference in 4th Grade Math Test Scores",
+            x = "Percent of 5-17 Year Olds in Poverty",
+            y = "Difference in Scores by Free Lunch Eligibility")
+```
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Regression for relative score difference
+dem_reg_rel <- lm(formula = rel_score_diff ~ percent_democrat + poverty, data = dem_lunch)
+knitr::kable(summary(dem_reg_rel)$coefficients, digits = 4)
+```
+
+Using the relative difference in scores, a one percentage point increase in democratic vote share in the 2020 election is associated with an approximately 0.0773 percentage increase in difference between math test scores for fourth graders who are not eligible for free lunch and those that are. The p-value for this estimate is approximately 0.0008. Using an alpha level of 0.05, we reject the null hypothesis and consider this result statistically significant, because 0.0008 < 0.05. If we assumed the percent of democratic vote share had no impact on differences in math scores, roughly 0.0008 of sampled results would be as or more extreme than the values used in this analysis. Since the p-value is less than 0.05, there is possibly a causal relationship between percent democrat and difference in test scores, but not for certain.
+Meanwhile, for a one percentage point increase in poverty rates, we expect a decrease in inequality of test scores by approximately 0.0146 points. The p-value for this result was about 0.7916. At the alpha level of 0.05, this result is not statistically significant and we fail to reject the null hypothesis (that there is no relationship between youth poverty rates and differences in test scores). We cannot prove causation.
 
 ```{r}
-library(haven)
-load_savfile <- read_spss("data/ATPW55.sav")
-saveascsv <- write.csv(load_savfile, file = "data/atp.csv", row.names = FALSE)
-atp <- read_csv("data/atp.csv")
+knitr::kable(summary(lm(formula = Eligible ~ percent_democrat, data = dem_lunch))$coefficients, digits = 4, caption = "Democrat Vote Share and Test Scores for Students Eligible for Free Lunch")
+knitr::kable(summary(lm(formula = `Not eligible` ~ percent_democrat, data = dem_lunch))$coefficients, digits = 4, caption = "Democrat Vote Share and Test Scores for Students Not Eligible for Free Lunch")
 ```
 
-```{r}
-## People who think human activity affects climate change "Not too much"
-not_human_activity <- atp |>
-  filter(ENVIR8_a_W55 == 3) |>
-  mutate(less_meat = if_else(EN6F1_a_W55 == 1, 1, 0),
-         carpool = if_else(EN6F1_b_W55 == 1, 1, 0))
+The additional bivariate regressions are between percent of democrat votes by state and test scores (not difference in test scores) for students eligible for free lunch and students not eligible. For students eligible for free lunch, a one point increase in democratic vote is associated with a 0.137 decrease in scores. Students who qualify for free lunch in more democratic states have lower scores. This estimate has a p-value of 0.0329. Using the alpha level of 0.05, this result is statistically significant. For students who do not qualify for free lunch, a one percent increase in democrat votes is associated with a 0.0479 point increase in scores. However, the p-value of this estimate was only 0.469 and thus not significant at the alpha level of 0.05. If the result was statistically significant, it would suggest that students who don’t receive free lunch perform higher in more democratic states.
 
-## Carpool and meat consumption rates
-not_human_activity |>
-  summarize(less_meat_prop = mean(less_meat, na.rm = TRUE) ,
-            carpool_prop = mean(carpool, na.rm = TRUE))
-
-## People who think human activity affects climate change a lot
-human_activity <- atp |>
-  filter(ENVIR8_a_W55 < 3) |>
-  mutate(less_meat = if_else(EN6F1_a_W55 == 1, 1, 0),
-         carpool = if_else(EN6F1_b_W55 == 1, 1, 0))
-
-# Carpool and meat consumption rates
-human_activity |>
-  summarize(less_meat_prop = mean(less_meat, na.rm = TRUE) ,
-            carpool_prop = mean(carpool, na.rm = TRUE))
-
-
-```
-Of the people who think human activity contributes to climate change "Not too much" or "Not at all," one quarter eat less meat and 40% carpool to help protect the environment. Of the people who think human activity contributes to climate change "A great deal" or "Some", half eat less meat and carpool to help protect the environment.
-
-
-how are the weather changes/disasters impacting a person correlated with support of government response to environmental issues and personal choices? (show how people affected by natural disaster more supportive of gov't)
-
-```{r}
-atp <- atp |>
-  mutate(behavior_freq = case_when(
-    ENV17_W55 == 1 ~ "All the time",
-    ENV17_W55 == 2 ~ "Some of the time",
-    ENV17_W55 == 3 ~ "Not often",
-    ENV17_W55 == 4 ~ "Not at all"))
-
-# people who think climate change is affecting their local community "A great deal" or "Some"
-affected <- atp |>
-  filter(CLIM9F1_a_W55 < 3 | (CLIM9F1_b_W55 < 3))
-
-# people who think climate change is affecting their local community "Not much" or "Not at all"
-unaffected <- atp |>
-  filter(CLIM9F1_a_W55 > 2 | (CLIM9F1_b_W55 > 2))
-
-affected
-unaffected
-```
-
-
-```{r}
-drought <- affected |>
-  count(CLIM10_a_W55) |>
-  pull(n)
-
-prop_drought_aff <- drought[1]/(drought[1] + drought[2])
-
-heat <- affected |>
-  count(CLIM10_b_W55) |>
-  pull(n)
-
-prop_heat_aff <- heat[1]/(heat[1] + heat[2])
-
-sweather <- affected |>
-  count(CLIM10_c_W55) |>
-  pull(n)
-
-prop_sweather_aff <- sweather[1]/(sweather[1] + sweather[2])
-
-sea <- affected |>
-  count(CLIM10_d_W55) |>
-  pull(n)
-
-prop_sea_aff <- sea[1]/(sea[1] + sea[2])
-
-wildfire <- affected |>
-  count(CLIM10_g_W55) |>
-  pull(n)
-
-prop_wildfire_aff <- wildfire[1]/(wildfire[1] + wildfire[2])
-```
-
-```{r}
-drought <- unaffected |>
-  count(CLIM10_a_W55) |>
-  pull(n)
-
-prop_drought_unaff <- drought[1]/(drought[1] + drought[2])
-
-heat <- unaffected |>
-  count(CLIM10_b_W55) |>
-  pull(n)
-
-prop_heat_unaff <- heat[1]/(heat[1] + heat[2])
-
-sweather <- unaffected |>
-  count(CLIM10_c_W55) |>
-  pull(n)
-
-prop_sweather_unaff <- sweather[1]/(sweather[1] + sweather[2])
-
-sea <- unaffected |>
-  count(CLIM10_d_W55) |>
-  pull(n)
-
-prop_sea_unaff <- sea[1]/(sea[1] + sea[2])
-
-wildfire <- unaffected |>
-  count(CLIM10_g_W55) |>
-  pull(n)
-
-prop_wildfire_unaff <- wildfire[1]/(wildfire[1] + wildfire[2])
-
-
-```
-
-```{r affected_barplot}
-
-event_prop_aff <- data.frame(event = c("Drought", "Excessive Heat", "Flood/Storm", "Sea Levels Rising", "Wildfires"),
-                         prop = c(prop_drought_aff, prop_heat_aff, prop_sweather_aff, prop_sea_aff, prop_wildfire_aff))
-
-event_prop_aff_bar <- ggplot(event_prop_aff, aes(x = factor(event),
-                       y = prop)) +
-  geom_bar(stat = "identity") +
-  labs(x = "Weather Event",
-       y = "Proportion",
-       title = "Proportion of People Affected by Severe Weather Events",
-       subtitle = "Who Claim They're Affected by Global Warming")
-
-event_prop_aff_bar
-```
-
-```{r unaffected_barplot}
-
-event_prop_unaff <- data.frame(event = c("Drought", "Excessive Heat", "Flood/Storm", "Sea Levels Rising", "Wildfires"),
-                         prop = c(prop_drought_unaff, prop_heat_unaff, prop_sweather_unaff, prop_sea_unaff, prop_wildfire_unaff))
-
-event_prop_unaff_bar <- ggplot(event_prop_unaff, aes(x = factor(event),
-                       y = prop)) +
-  geom_bar(stat = "identity") +
-  labs(x = "Weather Event",
-       y = "Proportion",
-       title = "Proportion of People Affected by Severe Weather Events", 
-       subtitle = "Who Claim They're Not Affected by Global Warming")
-
-event_prop_unaff_bar
-```
-
-DIFFERENCES IN PERSONAL BEHAVIOR
-```{r}
-#Affected
-behavior_aff <- affected |> 
-  count(behavior_freq) |>
-  filter(behavior_freq != 99)
-
-
-behavior_aff |>
-  ggplot(aes(x = factor(behavior_freq), y = n)) +
-  geom_bar(stat = "identity") +
-  labs(x = "How often do you make an effort to live in ways that help protect the
- environment?",
-   y = "Count")
-
-affected_proportions <- affected |>
-  count(behavior_freq) |>
-  filter(behavior_freq != "NA") |>
-  mutate(aff_prop = n/sum(n)) |>
-  select(behavior_freq, aff_prop)
-
-knitr::kable(behavior_aff, col.names = c("Frequency of Environmentally-Beneficial Behavior", "Count of People Affected by Severe Weather"))
-```
-```{r}
-#Unaffected
-behavior_unaff <- unaffected |> 
-  count(behavior_freq) |>
-  filter(behavior_freq != 99)
-
-behavior_unaff
-behavior_unaff |>
-  ggplot(aes(x = factor(behavior_freq), y = n)) +
-  geom_bar(stat = "identity") +
-  labs(x = "How often do you make an effort to live in ways that help protect the
- environment?",
-   y = "Count")
-
-unaffected_proportions <- unaffected |>
-  count(behavior_freq) |>
-  filter(behavior_freq != "NA") |>
-  mutate(unaff_prop = n/sum(n)) |>
-  select(behavior_freq, unaff_prop)
-
-knitr::kable(behavior_unaff, col.names = c("Frequency of Environmentally-Beneficial Behavior", "Count of People Not Affected by Severe Weather"))
-```
-
-```{r}
-differences_behavior <- data.frame(
-  affect_level = c(unaffected_proportions$behavior_freq),
-  unaffected = c(unaffected_proportions$unaff_prop),
-  affected = c(affected_proportions$aff_prop))
-
-differences_behavior
-```
-
-
+## Conclusion
+The results of this cross-sectional study do not support my hypothesis. Higher shares of democrat votes are associated with larger relative differences in test scores. There was no apparent significant relationship between poverty rates and differences in test scores. Pure test scores of students eligible for free lunch were associated with higher democrat vote shares with a statistically significant result. Meanwhile, test scores of students not eligible for free lunch were higher with higher democrat vote proportions, but this finding was not statistically significant. 
+A large confounding variable is urban population. Cities tend to be more democratic. Further, there is far more poverty and wealth inequality within cities. This may drive differences in test scores in a particular direction. A follow up study further dividing the data by rural and urban would show if this potential confounding factor plays a role in differences in test scores. Separating the data by county rather than by state would have been more useful because then the vote share and poverty rate data could be more precise. Generalizing to an entire state creates ambiguity and high margins of error. 

@@ -1,0 +1,101 @@
+state,eligibility,score
+Alabama,Eligible,218
+Alabama,Not eligible,242
+Alaska,Eligible,213
+Alaska,Not eligible,238
+Arizona,Eligible,218
+Arizona,Not eligible,242
+Arkansas,Eligible,221
+Arkansas,Not eligible,242
+California,Eligible,218
+California,Not eligible,250
+Colorado,Eligible,220
+Colorado,Not eligible,247
+Connecticut,Eligible,219
+Connecticut,Not eligible,248
+Delaware,Eligible,210
+Delaware,Not eligible,230
+Florida,Eligible,233
+Florida,Not eligible,251
+Georgia,Eligible,225
+Georgia,Not eligible,248
+Hawaii,Eligible,225
+Hawaii,Not eligible,245
+Idaho,Eligible,226
+Idaho,Not eligible,246
+Illinois,Eligible,221
+Illinois,Not eligible,250
+Indiana,Eligible,229
+Indiana,Not eligible,250
+Iowa,Eligible,226
+Iowa,Not eligible,250
+Kansas,Eligible,220
+Kansas,Not eligible,248
+Kentucky,Eligible,224
+Kentucky,Not eligible,248
+Louisiana,Eligible,221
+Louisiana,Not eligible,249
+Maine,Eligible,220
+Maine,Not eligible,242
+Maryland,Eligible,210
+Maryland,Not eligible,244
+Massachusetts,Eligible,225
+Massachusetts,Not eligible,254
+Michigan,Eligible,220
+Michigan,Not eligible,247
+Minnesota,Eligible,219
+Minnesota,Not eligible,249
+Mississippi,Eligible,229
+Mississippi,Not eligible,250
+Missouri,Eligible,217
+Missouri,Not eligible,246
+Montana,Eligible,228
+Montana,Not eligible,245
+Nebraska,Eligible,226
+Nebraska,Not eligible,253
+Nevada,Eligible,225
+Nevada,Not eligible,247
+New Hampshire,Eligible,224
+New Hampshire,Not eligible,244
+New Jersey,Eligible,220
+New Jersey,Not eligible,250
+New Mexico,Eligible,216
+New Mexico,Not eligible,238
+New York,Eligible,217
+New York,Not eligible,243
+North Carolina,Eligible,219
+North Carolina,Not eligible,246
+North Dakota,Eligible,225
+North Dakota,Not eligible,245
+Ohio,Eligible,221
+Ohio,Not eligible,252
+Oklahoma,Eligible,222
+Oklahoma,Not eligible,242
+Oregon,Eligible,228
+Oregon,Not eligible,NA
+Pennsylvania,Eligible,223
+Pennsylvania,Not eligible,250
+Rhode Island,Eligible,222
+Rhode Island,Not eligible,244
+South Carolina,Eligible,224
+South Carolina,Not eligible,250
+South Dakota,Eligible,220
+South Dakota,Not eligible,246
+Tennessee,Eligible,221
+Tennessee,Not eligible,243
+Texas,Eligible,228
+Texas,Not eligible,253
+Utah,Eligible,222
+Utah,Not eligible,248
+Vermont,Eligible,219
+Vermont,Not eligible,244
+Virginia,Eligible,218
+Virginia,Not eligible,249
+Washington,Eligible,222
+Washington,Not eligible,248
+West Virginia,Eligible,220
+West Virginia,Not eligible,233
+Wisconsin,Eligible,224
+Wisconsin,Not eligible,252
+Wyoming,Eligible,232
+Wyoming,Not eligible,248
